@@ -1,0 +1,97 @@
+.beijing{background-image: url(../img/beijing.png);}
+.height80{height: 140px;}
+.denglu{width: 530px;height: 340px;background: rgba(247,247,247,0.5);position: absolute;top: 220px;left: 336px;border-radius: 20px;padding:40px 50px;}
+.beijingk{height: 711px;position: relative;}
+.denglu h3{margin: 0;padding: 0;color: #666;}
+.fenxian{width: 100%;height: 1px;background: #d0d0d0;margin: 20px 0;}
+.input_l{
+	background: white;
+	width: 100%;
+    border: 1px solid #dcdcdc;
+    transition: .5s;
+    margin-bottom: 20px;
+    height: 40px;
+    line-height: 40px;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    }
+
+.input_l input{
+	
+    height: 40px;
+    line-height: 38px;
+    border: 0;
+    .input_l input:focus { outline: none; }
+}
+.input_l span{
+	    margin-left: 15px;
+    width: 10%
+	display: inline;
+    float: left;
+}
+.input_l .denglutu i{    display: inline-block;
+    width: 10px;
+    height: 20px;
+    border-right: 1px solid #bbb;
+    position: relative;
+    top: 7px;
+    left: 0;}
+
+.login-check {
+    width: 100%;
+}
+#login-check {
+    vertical-align: middle;
+}
+.login-check input {
+    position: relative;
+    top: -3px;
+    left: 0;
+}
+
+.login-check label {
+    font-size: 14px;
+    margin-left: 5px;
+    margin-top: -15px;
+}
+.imm-btn {
+   
+    height: 40px;
+    text-align: center;
+    line-height: 40px;
+    margin-top: 20px;
+    background-color: #FF3C07;
+}
+.imm-btn a {
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+}
+.click-on {
+    color: white;
+    background-color: #0093DD;
+}
+.click-on2{
+	color: white;
+	background-color: #0093DD;
+}
+.forget-pwd {
+	width: 100%;
+    margin-top: 20px;
+}
+.forget-pwd a {
+    font-size: 14px;
+}
+.fl {
+    display: inline;
+    float: left;
+}
+.fr {
+    display: inline;
+    float: right;
+}
+
+.dengluy{background: white;border-radius: 6px;padding:10px 36px 40px 30px;margin: 40px 0;}
+.dengluyr{margin: 20px 0;padding: 10px;width: 80%;margin: 20px auto;}
+.denglubjo{background-image: url(../images/b2.jpg);}
+.logobj2{background: white;}

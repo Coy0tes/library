@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.tree.dao.TesttreeDao">
+    
+	<sql id="testtreeColumns">
+		a.id AS "id",
+		a.id AS "idx",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.parent_id AS "parent.id",
+		a.parent_ids AS "parentIds",
+		a.name AS "name",
+		a.sort AS "sort",
+		a.beizhu AS "beizhu"
+	</sql>
+	
+	<sql id="testtreeJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="Testtree" >
+		SELECT 
+			<include refid="testtreeColumns"/>
+		FROM testtree a
+		<include refid="testtreeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getName" resultType="Testtree" >
+		SELECT 
+			<include refid="testtreeColumns"/>
+		FROM testtree a
+		<include refid="testtreeJoins"/>
+		WHERE a.name = #{name}
+	</select>
+	
+	<select id="findList" resultType="Testtree" >
+		SELECT 
+			<include refid="testtreeColumns"/>
+		FROM testtree a
+		<include refid="testtreeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name = #{name}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Testtree" >
+		SELECT 
+			<include refid="testtreeColumns"/>
+		FROM testtree a
+		<include refid="testtreeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO testtree(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			parent_id,
+			parent_ids,
+			name,
+			sort,
+			beizhu
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{parent.id},
+			#{parentIds},
+			#{name},
+			#{sort},
+			#{beizhu}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE testtree SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			parent_id = #{parent.id},
+			parent_ids = #{parentIds},
+			name = #{name},
+			sort = #{sort},
+			beizhu = #{beizhu}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM testtree
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE testtree SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Testtree" statementType="STATEMENT">
+		select * FROM testtree  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

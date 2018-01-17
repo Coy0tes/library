@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.books.dao.BooksDao">
+    
+	<sql id="booksColumns">
+		a.id AS "id",
+		a.isbn AS "isbn",
+		a.ssh AS "ssh",
+		concat(b.name," ",b.remarks) AS "booktype",
+		a.booktype AS "booktypeid",
+		a.name AS "name",
+		a.status AS "status",
+		a.author AS "author",
+		a.cbs AS "cbs",
+		a.price AS "price",
+		a.numin AS "numIn",
+		a.numout AS "numOut",
+		a.numloss AS "numLoss",
+		a.numbroken AS "numBroken",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		(select label from sys_dict where type='bookStatus' and value=a.status) AS "statusName"
+	</sql>
+	
+	<sql id="booksJoins">
+		LEFT JOIN booktype b ON a.booktype = b.id
+	</sql>
+	
+    
+	<select id="get" resultType="Books" >
+		SELECT 
+			<include refid="booksColumns"/>
+		FROM books a
+		<include refid="booksJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByIsbn" resultType="Books" >
+		SELECT 
+			<include refid="booksColumns"/>
+		FROM books a
+		<include refid="booksJoins"/>
+		WHERE a.isbn = #{isbn}
+	</select>
+	<select id="getByIsbnList" resultType="Books" >
+		SELECT 
+			<include refid="booksColumns"/>
+		FROM books a
+		<include refid="booksJoins"/>
+		WHERE a.isbn = #{isbn}
+	</select>
+	
+	<select id="findRepart" resultType="Integer">
+		SELECT 
+			count(1)
+			FROM books a
+		<where>
+			AND a.isbn = #{isbn}
+		</where>
+	</select>
+	
+	<select id="updateByBookStatus">
+		UPDATE books SET 	
+			status = #{status}
+			<where>
+				<if test="id != null and id != ''">
+					AND id = #{id}
+				</if>
+				<if test="isbn != null and isbn != ''">
+					AND isbn = #{isbn}
+				</if>
+			</where> 
+	</select>
+	
+	<select id="findList" resultType="Books" >
+		SELECT 
+			<include refid="booksColumns"/>
+		FROM books a
+		<include refid="booksJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="isbn != null and isbn != ''">
+				AND a.isbn = #{isbn}
+			</if>
+			<if test="ssh != null and ssh != ''">
+				AND a.ssh LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{ssh},'%')</if>
+			</if>
+			<if test="booktype != null and booktype != ''">
+				AND a.booktype = #{booktype}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="status != null and status != ''">
+				<if test="status == 0">
+					AND a.numin != 0
+				</if>
+				<if test="status == 1">
+					AND a.numout != 0
+				</if>
+				<if test="status == 3">
+					AND a.numloss != 0
+				</if>
+				<if test="status == 2">
+					AND a.numbroken != 0
+				</if>
+			</if>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Books" >
+		SELECT 
+			<include refid="booksColumns"/>
+		FROM books a
+		<include refid="booksJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO books(
+			id,
+			isbn,
+			ssh,
+			booktype,
+			name,
+			status,
+			author,
+			cbs,
+			price,
+			numin,
+			numout,
+			numloss,
+			numbroken,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{isbn},
+			#{ssh},
+			#{booktypeid},
+			#{name},
+			#{status},
+			#{author},
+			#{cbs},
+			#{price},
+			#{numIn},
+			#{numOut},
+			#{numLoss},
+			#{numBroken},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE books SET 	
+			isbn = #{isbn},
+			ssh = #{ssh},
+			booktype = #{booktypeid},
+			name = #{name},
+			status= #{status},
+			author = #{author},
+			cbs = #{cbs},
+			price = #{price},
+			numin = #{numIn},
+			numout = #{numOut},
+			numloss = #{numLoss},
+			numbroken = #{numBroken},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<update id="updateBySsh">
+		UPDATE books SET 	
+			ssh = #{ssh}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateSsh">
+		UPDATE books SET 	
+			ssh = #{ssh}
+		WHERE isbn = #{isbn}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM books
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE books SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Books" statementType="STATEMENT">
+		select * FROM books  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 入库 -->
+	<update id="addNumin">
+		UPDATE books SET
+			numin = IFNULL(numin,0) + #{numIn}
+		WHERE isbn = #{isbn}
+	</update>
+	
+	<!-- 借书，更新图书表在借图书数量 -->
+	<update id="bookByOut">
+		UPDATE books SET
+			numout = IFNULL(numout,0) + 1,
+			numin = IFNULL(numin,0) - 1
+		WHERE id = #{id}
+	</update>
+	<!-- 还书，更新图书表在借图书数量 -->
+	<update id="bookByIn">
+		UPDATE books SET
+			numout = IFNULL(numout,0) - 1,
+			numin = IFNULL(numin,0) + 1
+		WHERE id = #{id}
+	</update>
+	<!-- 遗失，更新图书表在借图书数量 -->
+	<update id="bookByLoss">
+		UPDATE books SET
+			numout = IFNULL(numout,0) - 1,
+			numloss = IFNULL(numloss,0) + 1
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 图书统计管理 -->
+	<!-- 图书统计管理-统计所有图书 -->
+	<select id="getAll" resultType="Integer">
+		SELECT
+		  sum(IFNULL(a.numin,0))+sum(IFNULL(a.numout,0))+sum(IFNULL(a.numloss,0))+sum(IFNULL(a.numbroken,0)) as "total"
+		from books a 
+	</select>
+	<!-- 图书统计管理-统计在库图书 -->
+	<select id="getByIn" resultType="Integer">
+		SELECT
+		  sum(IFNULL(a.numin,0)) as "numIn"
+		from books a 
+	</select>
+	<!-- 图书统计管理-统计借出图书 -->
+	<select id="getByOut" resultType="Integer">
+		SELECT
+		  sum(IFNULL(a.numout,0)) as "numOut"
+		from books a 
+	</select>
+	<!-- 图书统计管理-统计损坏图书 -->
+	<select id="getByBreak" resultType="Integer">
+		SELECT
+			sum(IFNULL(a.numbroken,0)) as "numBroken"
+		from books a 
+	</select>
+	<!-- 图书统计管理-统计遗失图书 -->
+	<select id="getByLoss" resultType="Integer">
+		SELECT
+			sum(IFNULL(a.numloss,0)) as "numLoss"
+		from books a 
+	</select>
+	
+</mapper>

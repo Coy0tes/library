@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.bookstudent.dao.BookStudentDao">
+    
+	<sql id="bookStudentColumns">
+		a.id AS "id",
+		a.student AS "student.id",
+		b.name AS "student.name",
+		b.xh AS "student.xh",
+		c.name AS "student.classid.name",
+		n.name AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	<sql id="bookTeachersColumns">
+		a.id AS "id",
+		a.teacher AS "teachers.id",
+		t.name AS "teachers.name",
+		t.bh AS "teachers.bh",
+		n.name AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="bookStudentJoins">
+		LEFT JOIN students b ON b.id = a.student
+		LEFT JOIN classes c ON c.id = b.classid
+		LEFT JOIN sys_user n ON n.id = a.create_by
+	</sql>
+	
+	<sql id="bookTeachersJoins">
+		LEFT JOIN teachers t ON t.id = a.teacher
+		LEFT JOIN sys_user n ON n.id = a.create_by
+	</sql>
+	
+    <!-- 学生 get -->
+	<select id="get" resultType="BookStudent" >
+		SELECT 
+			<include refid="bookStudentColumns"/>
+		FROM book_student a
+		<include refid="bookStudentJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<!-- 教师get -->
+	<select id="getByTeachers" resultType="BookStudent" >
+		SELECT 
+			<include refid="bookTeachersColumns"/>
+		FROM book_student a
+		<include refid="bookTeachersJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	
+	<!-- 教师相关借阅信息 -->
+    <select id="getByBh" resultType="BookStudent" >
+		SELECT 
+			a.id AS "id",
+			a.teacher AS "teachers.id",
+			n.name AS "createBy.id",
+			a.create_date AS "createDate",
+			a.update_by AS "updateBy.id",
+			a.update_date AS "updateDate",
+			a.remarks AS "remarks",
+			a.del_flag AS "delFlag"
+		FROM book_student a
+			LEFT JOIN teachers t ON t.id = a.teacher
+			LEFT JOIN sys_user n ON n.id = a.create_by 
+		<where>
+			AND t.bh = #{teachers.bh}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<!-- 学生相关借阅信息查询 -->
+    <select id="getByXh" resultType="BookStudent" >
+		SELECT 
+			<include refid="bookStudentColumns"/>
+		FROM book_student a
+		<include refid="bookStudentJoins"/>
+		WHERE b.xh = #{student.xh}
+	</select>
+	
+	<!-- 学生借书导出 -->
+	<select id="bookStudentExport" resultType="BookStudentPojo">
+		SELECT
+			a.id AS "id",
+			a.mainid AS "mainid.id",
+			s.name AS "studentname",
+			s.xh AS "studentnum",
+			(select name from classes where id = s.classid) AS "classname",
+			a.isbn AS "isbn",
+			a.ssh AS "ssh",
+			a.booktype AS "booktype",
+			a.name AS "name",
+			a.author AS "author",
+			a.cbs AS "cbs",
+			a.price AS "price",
+			a.jcsj AS "jcsj",
+			a.yhrq AS "yhrq",
+			a.ghsj AS "ghsj",
+			a.cqts AS "cqts",
+			(select name from sys_user where id = a.create_by) AS "admins",
+			a.remarks AS "rem",
+			a.del_flag AS "delFlag"
+		FROM book_student_detail a
+		LEFT JOIN book_student b ON b.id = a.mainid
+		LEFT JOIN students s ON s.id = b.student
+		WHERE b.student IS NOT NULL
+	</select>
+	
+	<!-- 教师借书导出 -->
+	<select id="bookTeachersExport" resultType="BookTeachersPojo">
+		SELECT
+			a.id AS "id",
+			a.mainid AS "mainid.id",
+			t.name AS "teachersname",
+			t.bh AS "teacherbh",
+			a.isbn AS "isbn",
+			a.ssh AS "ssh",
+			a.booktype AS "booktype",
+			a.name AS "name",
+			a.author AS "author",
+			a.cbs AS "cbs",
+			a.price AS "price",
+			a.jcsj AS "jcsj",
+			a.yhrq AS "yhrq",
+			a.ghsj AS "ghsj",
+			a.cqts AS "cqts",
+			(select name from sys_user where id = a.create_by) AS "admins",
+			a.remarks AS "rem",
+			a.del_flag AS "delFlag"
+		FROM book_student_detail a
+		LEFT JOIN book_student b ON b.id = a.mainid
+		LEFT JOIN teachers t ON t.id = b.teacher
+		WHERE b.teacher IS NOT NULL
+	</select>
+	
+	<!-- 查询学生在借图书信息 -->
+	<select id="findList" resultType="BookStudent" >
+		SELECT 
+			<include refid="bookStudentColumns"/>
+		FROM book_student a
+		<include refid="bookStudentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="student != null and student.name != null and student.name != ''">
+				AND b.name LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{student.name},'%')</if>
+			</if>
+			<if test="student != null and student.xh != null and student.xh != ''">
+				AND b.xh LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{student.xh},'%')</if>
+			</if>
+			AND a.student IS NOT NULL
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 查询教师在借图书信息 -->
+	<select id="findTeachersList" resultType="BookStudent" >
+		SELECT 
+			<include refid="bookTeachersColumns"/>
+		FROM book_student a
+		<include refid="bookTeachersJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="teachers != null and teachers.name != null and teachers.name != ''">
+				AND t.name LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{teachers.name},'%')</if>
+			</if>
+			<if test="teachers != null and teachers.bh != null and teachers.bh != ''">
+				AND t.bh LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{teachers.bh},'%')</if>
+			</if>
+			AND a.teacher IS NOT NULL
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="BookStudent" >
+		SELECT 
+			<include refid="bookStudentColumns"/>
+		FROM book_student a
+		<include refid="bookStudentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO book_student(
+			id,
+			student,
+			teacher,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{student.id},
+			#{teachers.id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE book_student SET 	
+			student = #{student.id},
+			teacher = #{teachers.id},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM book_student
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE book_student SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="BookStudent" statementType="STATEMENT">
+		select * FROM book_student  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 根据学生id获取BookStudent -->
+	<select id="getStudentsById" resultType="BookStudent">
+		SELECT * FROM book_student a
+		LEFT JOIN students s ON s.id = a.student
+		WHERE a.student = #{student.id}
+	</select>
+	
+	<!-- 根据教师id获取BookStudent -->
+	<select id="getTeachersByGh" resultType="BookStudent">
+		SELECT * FROM book_student a
+		LEFT JOIN teachers t ON t.id = a.teacher
+		WHERE a.teacher = #{teachers.id}
+	</select>
+	
+</mapper>

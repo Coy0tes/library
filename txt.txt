@@ -1,0 +1,22 @@
+教师跟学生公用一个表，book_student表有学生student对象跟教师teacher对象， _detail表只保存借书信息，继续跟主表book_student表通过mainid关联，不同之处
+	学生借书存的学生信息，book_student表只保存studentid
+	教师借书页面拷贝的学生借书页面，程序处理上，book_student表只保存teacherid，程序处理上，跟学生借书共用一套程序，只有在添加历史借阅记录时只赋值教师基本信息，controller分开，为teachercontroller，但公用service，权限有：增加、查看、删除、导出
+	教师跟学生借书页面，数据的区分：
+		教师借书页面查询时SQL用a.teacherid IS NOT NULL
+		学生借书页面查询时SQL用a.studentid IS NOT NULL
+		
+学生遗失用的表是book_student_detail，关联book_student来获取学生的信息
+教师遗失同学生，没有实体类，直接拿BookStudentdetail用
+
+
+
+bookloss:遗失统计		
+book:图书表
+bookstudent：学生借书表
+bookstudentback：学生还书表
+bookstudenthistory：学生借书历史查询
+
+
+
+
+		

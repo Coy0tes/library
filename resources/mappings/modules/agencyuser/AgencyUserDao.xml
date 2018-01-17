@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.agencyuser.dao.AgencyUserDao">
+    
+	<sql id="agencyUserColumns">
+		a.id AS "id",
+		a.login_name AS "loginName",
+		a.password AS "password",
+		a.name AS "name",
+		a.phone AS "phone",
+		a.email AS "email",
+		a.photo AS "photo",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.user_type AS "userType",
+		a.user_status AS "userStatus"
+	</sql>
+	
+	<sql id="agencyUserJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="AgencyUser" >
+		SELECT 
+			<include refid="agencyUserColumns"/>
+		FROM sys_user a
+		<include refid="agencyUserJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AgencyUser" >
+		SELECT 
+			<include refid="agencyUserColumns"/>
+		FROM sys_user a
+		<include refid="agencyUserJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} AND a.user_type = '2'
+			
+			<if test="loginName != null and loginName != ''">
+				AND a.login_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{loginName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{loginName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{loginName},'%')</if>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AgencyUser" >
+		SELECT 
+			<include refid="agencyUserColumns"/>
+		FROM sys_user a
+		<include refid="agencyUserJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListUndo" resultType="AgencyUser" >
+		SELECT 
+			<include refid="agencyUserColumns"/>
+		FROM sys_user a
+		<include refid="agencyUserJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} AND a.user_type = '2'
+			AND not exists (select 1 from yw_tuandui_user where userid=a.id)
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_user(
+			id,
+			login_name,
+			password,
+			name,
+			phone,
+			email,
+			photo,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			user_status,
+			user_type
+		) VALUES (
+			#{id},
+			#{loginName},
+			#{password},
+			#{name},
+			#{phone},
+			#{email},
+			#{photo},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{userStatus},
+			'2'
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_user SET 	
+			login_name = #{loginName},
+			password = #{password},
+			name = #{name},
+			phone = #{phone},
+			email = #{email},
+			photo = #{photo},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			user_status = #{userStatus}
+		WHERE id = #{id}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM sys_user
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE sys_user SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="AgencyUser" statementType="STATEMENT">
+		select * FROM sys_user  where ${propertyName} = '${value}'
+	</select>
+	
+	
+		<!-- 删除用户和角色关联表数据 -->
+	<delete id="deleteUserRole">
+		DELETE FROM sys_user_role WHERE user_id = #{id}
+	</delete>
+	
+	<!-- 插入用户和角色关联表数据 -->
+	<insert id="insertUserRole">
+		INSERT INTO sys_user_role(user_id, role_id)
+		<foreach collection="roleList" item="role" separator=" union all ">
+			SELECT #{id}, #{role.id} FROM dual
+		</foreach>
+	</insert>
+	
+	<select id="getAdminRole" resultType="Integer">
+		select count(1) from sys_user_role where user_id = #{id} and role_id = '1c54e003c1fc4dcd9b087ef8d48abac3'
+	</select>
+	
+</mapper>

@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.bookstudent.dao.BookStudentDetailDao">
+    
+	<sql id="bookStudentDetailColumns">
+		a.id AS "id",
+		a.mainid AS "mainid.id",
+		a.bookid AS "bookid.id",
+		a.isbn AS "isbn",
+		a.ssh AS "ssh",
+		a.booktype AS "booktype",
+		a.name AS "name",
+		a.author AS "author",
+		a.cbs AS "cbs",
+		a.price AS "price",
+		a.jcsj AS "jcsj",
+		a.yhrq AS "yhrq",
+		a.ghsj AS "ghsj",
+		a.cqts AS "cqts",
+		a.historyid AS "historyid",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.remarks AS "rem",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="bookStudentDetailJoins">
+		LEFT JOIN book_student b ON b.id = a.mainid
+	</sql>
+	
+    
+	<select id="get" resultType="BookStudentDetail" >
+		SELECT 
+			<include refid="bookStudentDetailColumns"/>
+		FROM book_student_detail a
+		<include refid="bookStudentDetailJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<!-- 根据mainid获取当前子表mainid的数量 -->
+	<select id="getByMainid" resultType="Integer">
+		select count(1) from book_student_detail
+		where mainid = #{mainid.id};
+	</select>
+	
+	<select id="getByIsbn" resultType="BookStudentDetail" >
+		SELECT 
+			<include refid="bookStudentDetailColumns"/>
+		FROM book_student_detail a
+		<include refid="bookStudentDetailJoins"/>
+		WHERE a.isbn = #{isbn} 
+	</select>
+	
+	<select id="getByIsbnList" resultType="BookStudentDetail" >
+		SELECT 
+			<include refid="bookStudentDetailColumns"/>
+		FROM book_student_detail a
+		<include refid="bookStudentDetailJoins"/>
+		WHERE a.isbn = #{isbn}
+	</select>
+	
+	<select id="findList" resultType="BookStudentDetail" >
+		SELECT 
+			<include refid="bookStudentDetailColumns"/>
+		FROM book_student_detail a
+		<include refid="bookStudentDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="mainid != null and mainid != ''">
+				AND a.mainid = #{mainid.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<!-- 遗失赔偿-学生遗失赔偿 -->
+	<select id="findListByStudent" resultType="BookStudentDetail">
+		SELECT
+			a.id AS "id",
+			a.mainid AS "mainid.id",
+			a.bookid AS "bookid.id",
+			a.isbn AS "isbn",
+			a.ssh AS "ssh",
+			a.booktype AS "booktype",
+			a.name AS "name",
+			a.author AS "author",
+			a.cbs AS "cbs",
+			a.price AS "price",
+			a.jcsj AS "jcsj",
+			a.yhrq AS "yhrq",
+			a.ghsj AS "ghsj",
+			a.cqts AS "cqts",
+			s.name AS "studentname",
+			s.xh AS "studentnum",
+			a.historyid AS "historyid",
+			a.create_by AS "createBy.id",
+			a.create_date AS "createDate",
+			a.update_by AS "updateBy.id",
+			a.update_date AS "updateDate",
+			a.remarks AS "remarks",
+			a.del_flag AS "delFlag"
+		FROM
+			book_student_detail a
+		LEFT JOIN book_student b ON b.id = a.mainid
+		LEFT JOIN students s ON s.id = b.student
+		<where>
+			<if test="studentname != null and studentname != ''">
+				s.name LIKE concat("%", #{studentname}, "%")
+			</if>
+			<if test="studentnum != null and studentnum != ''">
+				s.xh LIKE concat("%", #{studentnum}, "%")
+			</if>
+			<if test="isbn != null and isbn != ''">
+				a.isbn LIKE concat("%", #{isbn}, "%")
+			</if>
+			<if test="ssh != null and ssh != ''">
+				a.ssh LIKE concat("%", #{ssh}, "%")
+			</if>
+			<if test="name != null and name != ''">
+				a.bookid.name LIKE concat("%", #{name}, "%")
+			</if>
+			<if test="jcsj != null and jcsj != ''">
+				a.jcsj LIKE concat("%", #{jcsj}, "%")
+			</if>
+			AND b.student IS NOT NULL
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 遗失赔偿-教师遗失赔偿 -->
+	<select id="findListByTeacher" resultType="BookStudentDetail">
+		SELECT
+			a.id AS "id",
+			a.mainid AS "mainid.id",
+			a.bookid AS "bookid.id",
+			a.isbn AS "isbn",
+			a.ssh AS "ssh",
+			a.booktype AS "booktype",
+			a.name AS "name",
+			a.author AS "author",
+			a.cbs AS "cbs",
+			a.price AS "price",
+			a.jcsj AS "jcsj",
+			a.yhrq AS "yhrq",
+			a.ghsj AS "ghsj",
+			a.cqts AS "cqts",
+			t.name AS "teachersname",
+			t.bh AS "teacherbh",
+			a.historyid AS "historyid",
+			a.create_by AS "createBy.id",
+			a.create_date AS "createDate",
+			a.update_by AS "updateBy.id",
+			a.update_date AS "updateDate",
+			a.remarks AS "remarks",
+			a.del_flag AS "delFlag"
+		FROM
+			book_student_detail a
+		LEFT JOIN book_student b ON b.id = a.mainid
+		LEFT JOIN teachers t ON t.id = b.teacher
+		<where>
+			<if test="teachersname != null and teachersname != ''">
+				t.name LIKE concat("%", #{teachersname}, "%")
+			</if>
+			<if test="teacherbh != null and teacherbh != ''">
+				t.bh LIKE concat("%", #{teacherbh}, "%")
+			</if>
+			<if test="isbn != null and isbn != ''">
+				a.isbn LIKE concat("%", #{isbn}, "%")
+			</if>
+			<if test="ssh != null and ssh != ''">
+				a.ssh LIKE concat("%", #{ssh}, "%")
+			</if>
+			<if test="name != null and name != ''">
+				a.bookid.name LIKE concat("%", #{name}, "%")
+			</if>
+			<if test="jcsj != null and jcsj != ''">
+				a.jcsj LIKE concat("%", #{jcsj}, "%")
+			</if>
+			AND b.teacher IS NOT NULL
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="BookStudentDetail" >
+		SELECT 
+			<include refid="bookStudentDetailColumns"/>
+		FROM book_student_detail a
+		<include refid="bookStudentDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO book_student_detail(
+			id,
+			mainid,
+			bookid,
+			isbn,
+			ssh,
+			booktype,
+			name,
+			author,
+			cbs,
+			price,
+			jcsj,
+			yhrq,
+			ghsj,
+			cqts,
+			historyid,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{mainid.id},
+			#{bookid.id},
+			#{isbn},
+			#{ssh},
+			#{booktype},
+			#{name},
+			#{author},
+			#{cbs},
+			#{price},
+			#{jcsj},
+			#{yhrq},
+			#{ghsj},
+			#{cqts},
+			#{historyid},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE book_student_detail SET 	
+			mainid = #{mainid.id},
+			bookid = #{bookid.id},
+			isbn = #{isbn},
+			ssh = #{ssh},
+			booktype = #{booktype},
+			name = #{name},
+			author = #{author},
+			cbs = #{cbs},
+			price = #{price},
+			jcsj = #{jcsj},
+			yhrq = #{yhrq},
+			ghsj = #{ghsj},
+			cqts = #{cqts},
+			historyid = #{historyid},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 根据ISBN号查出当前学生跟班级 -->
+	<select id="findSdtCls" resultType="BookStudentDetail">
+		SELECT 
+			a.id AS "id",
+			a.mainid AS "mainid.id",
+			a.bookid AS "bookid.id",
+			a.isbn AS "isbn",
+			a.ssh AS "ssh",
+			a.booktype AS "booktype",
+			a.name AS "name",
+			a.author AS "author",
+			a.cbs AS "cbs",
+			a.price AS "price",
+			a.jcsj AS "jcsj",
+			a.yhrq AS "yhrq",
+			a.ghsj AS "ghsj",
+			a.cqts AS "cqts",
+			a.historyid AS "historyid",
+			s.name AS "studentname",
+			c.name AS "classname",
+			s.xh AS "studentnum"
+		FROM book_student_detail a
+		LEFT JOIN book_student b ON a.mainid = b.id
+		LEFT JOIN students s ON s.id = b.student
+		LEFT JOIN classes c ON c.id = s.classid
+		<where>
+			<if test="studentnum != null and studentnum != ''">
+				AND s.xh = #{studentnum}
+			</if>
+			AND a.isbn = #{isbn}
+			AND b.student IS NOT NULL
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 根据ISBN号查出当前教师 -->
+	<select id="findTeachers" resultType="BookStudentDetail">
+		SELECT 
+			a.id AS "id",
+			a.mainid AS "mainid.id",
+			a.bookid AS "bookid.id",
+			a.isbn AS "isbn",
+			a.ssh AS "ssh",
+			a.booktype AS "booktype",
+			a.name AS "name",
+			a.author AS "author",
+			a.cbs AS "cbs",
+			a.price AS "price",
+			a.jcsj AS "jcsj",
+			a.yhrq AS "yhrq",
+			a.ghsj AS "ghsj",
+			a.cqts AS "cqts",
+			t.name AS "teachersname",
+			t.bh AS "teacherbh",
+			a.historyid AS "historyid"
+		FROM book_student_detail a
+		LEFT JOIN book_student b ON a.mainid = b.id
+		LEFT JOIN teachers t ON t.id = b.teacher
+		<where>
+			<if test="teacherbh != null and teacherbh != ''">
+				t.bh = #{teacherbh}
+			</if>
+			AND a.isbn = #{isbn}
+			AND b.teacher IS NOT NULL
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 根据ISBN号查出当前教师 -->
+	<select id="findTeachersList" resultType="BookStudentDetail">
+		SELECT 
+			a.id AS "id",
+			a.mainid AS "mainid.id",
+			a.bookid AS "bookid.id",
+			a.isbn AS "isbn",
+			a.ssh AS "ssh",
+			a.booktype AS "booktype",
+			a.name AS "name",
+			a.author AS "author",
+			a.cbs AS "cbs",
+			a.price AS "price",
+			a.jcsj AS "jcsj",
+			a.yhrq AS "yhrq",
+			a.ghsj AS "ghsj",
+			a.cqts AS "cqts",
+			t.name AS "teachersname",
+			t.bh AS "teacherbh",
+			a.historyid AS "historyid"
+		FROM book_student_detail a
+		LEFT JOIN book_student b ON a.mainid = b.id
+		LEFT JOIN teachers t ON t.id = b.teacher
+		<where>
+			<if test="teacherbh != null and teacherbh != ''">
+				t.bh = #{teacherbh}
+			</if>
+			AND a.isbn = #{isbn}
+			AND b.teacher IS NOT NULL
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 只更新历史记录表的id，插入到子表中，用于： 还书更新归还日期的时候根据此historyid寻找当前在借书本的历史记录 -->
+	<update id="updateHistoryid">
+		UPDATE book_student_detail SET
+			 historyid = #{historyid}
+			 WHERE id = #{id}
+	</update>
+	<!-- 只更新remarks字段 -->
+	<update id="updateRemarks">
+		UPDATE book_student_detail SET
+			 remarks = #{remarks}
+		<choose>
+			<when test="id !=null and id != ''">
+				WHERE id = #{id}
+			</when>
+		</choose>
+	</update>
+	
+	
+	<!-- 还书时在借书籍子表删除 -->
+	<update id="deleteByIsbn">
+		DELETE FROM book_student_detail
+		<choose>
+			<when test="id !=null and id != ''">
+				WHERE isbn = #{isbn}
+			</when>
+		</choose>
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM book_student_detail
+		<choose>
+			<when test="id !=null and id != ''">
+				WHERE id = #{id}
+			</when>
+			<otherwise>
+				WHERE mainid = #{mainid.id}
+			</otherwise>
+		</choose>
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE book_student_detail SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		<choose>
+			<when test="id !=null and id != ''">
+				WHERE id = #{id}
+			</when>
+			<otherwise>
+				WHERE mainid = #{mainid.id}
+			</otherwise>
+		</choose>
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="BookStudentDetail" statementType="STATEMENT">
+		select * FROM book_student_detail  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

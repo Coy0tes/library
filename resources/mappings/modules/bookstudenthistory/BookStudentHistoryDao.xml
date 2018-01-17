@@ -1,0 +1,611 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.bookstudenthistory.dao.BookStudentHistoryDao">
+	<sql id="bookStudentHistoryColumns">
+		a.id AS "id",
+		a.mainid AS "mainid.id",
+		a.bookid AS "bookid.id",
+		a.isbn AS "isbn",
+		a.ssh AS "ssh",
+		a.booktype AS "booktype",
+		a.name AS "name",
+		a.author AS "author",
+		a.cbs AS "cbs",
+		a.price AS "price",
+		a.jcsj AS "jcsj",
+		a.yhrq AS "yhrq",
+		a.ghsj AS "ghsj",
+		a.cqts AS "cqts",
+		a.studentid AS "studentId",
+		a.studentname AS "studentName",
+		a.studentxh AS "studentXh",
+		a.classesid AS "classesId",
+		a.classesname AS "classesName",
+		a.teachersid AS "teachersId",
+		a.teachersname AS "teachersName",
+		a.teachersBh AS "teachersBh",
+		a.pcsj AS "pcsj",
+		a.pcje AS "pcje",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.remarks AS "rem",
+		a.del_flag AS "delFlag"
+	</sql>
+		
+	<sql id="bookStudentHistoryJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="BookStudentHistory" >
+		SELECT 
+			<include refid="bookStudentHistoryColumns"/>
+		FROM book_student_history a
+		<include refid="bookStudentHistoryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<!-- 学生历史记录导出 -->
+	<select id="studentHistoryExport" resultType="BookStudentHistoryPojo">
+		SELECT 
+			a.id AS "id",
+			a.mainid AS "mainid.id",
+			a.bookid AS "bookid.id",
+			a.isbn AS "isbn",
+			a.ssh AS "ssh",
+			a.booktype AS "booktype",
+			a.name AS "name",
+			a.author AS "author",
+			a.cbs AS "cbs",
+			a.price AS "price",
+			a.jcsj AS "jcsj",
+			a.yhrq AS "yhrq",
+			a.ghsj AS "ghsj",
+			a.cqts AS "cqts",
+			a.studentid AS "studentId",
+			a.studentname AS "studentName",
+			a.studentxh AS "studentXh",
+			a.classesid AS "classesId",
+			a.classesname AS "classesName",
+			a.pcsj AS "pcsj",
+			a.pcje AS "pcje",
+			(SELECT name FROM SYS_USER WHERE id = a.create_by) AS "admins",
+			a.remarks AS "rem"
+		FROM book_student_history a 
+		WHERE a.studentname IS NOT NULL
+	</select>
+	
+	<!-- 教师历史记录导出 -->
+	<select id="teachersHistoryExport" resultType="BookTeachersHistoryPojo">
+		SELECT 
+			a.id AS "id",
+			a.mainid AS "mainid.id",
+			a.bookid AS "bookid.id",
+			a.isbn AS "isbn",
+			a.ssh AS "ssh",
+			a.booktype AS "booktype",
+			a.name AS "name",
+			a.author AS "author",
+			a.cbs AS "cbs",
+			a.price AS "price",
+			a.jcsj AS "jcsj",
+			a.yhrq AS "yhrq",
+			a.ghsj AS "ghsj",
+			a.cqts AS "cqts",
+			a.teachersid AS "teachersId",
+			a.teachersname AS "teachersName",
+			a.teachersbh AS "teachersBh",
+			a.pcsj AS "pcsj",
+			a.pcje AS "pcje",
+			(SELECT name FROM SYS_USER WHERE id = a.create_by) AS "admins",
+			a.remarks AS "rem"
+		FROM book_student_history a 
+		WHERE a.teachersbh IS NOT NULL
+	</select>
+	
+	<!-- 学生历史记录查询 -->
+	<select id="findList" resultType="BookStudentHistory" >
+		SELECT 
+			<include refid="bookStudentHistoryColumns"/>
+		FROM book_student_history a
+		<include refid="bookStudentHistoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="isbn != null and isbn != ''">
+				AND a.isbn = #{isbn}
+			</if>
+			<if test="ssh != null and ssh != ''">
+				AND a.ssh LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{ssh},'%')</if>
+			</if>
+			<if test="booktype != null and booktype != ''">
+				AND a.booktype = #{booktype}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="author != null and author != ''">
+				AND a.author LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{author},'%')</if>
+			</if>
+			<if test="cbs != null and cbs != ''">
+				AND a.cbs LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{cbs},'%')</if>
+			</if>
+			<if test="jcsj != null and jcsj != ''">
+				AND DATE_FORMAT(a.jcsj,'%Y-%m-%d %H:%i') &gt;= #{jcsj}
+			</if>
+			<if test="yhrq != null and yhrq != ''">
+				AND DATE_FORMAT(a.yhrq,'%Y-%m-%d %H:%i') &gt;= #{yhrq}
+			</if>
+			<if test="ghsj != null and ghsj != ''">
+				AND DATE_FORMAT(a.ghsj,'%Y-%m-%d %H:%i') &gt;= #{ghsj}
+			</if>
+			<if test="studentName != null and studentName != ''">
+				AND a.studentName LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{studentName},'%')</if>
+			</if>
+			<if test="studentXh != null and studentXh != ''">
+				AND a.studentXh LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{studentXh},'%')</if>
+			</if>
+			<if test="classesName != null and classesName != ''">
+				AND a.classesName LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{classesName},'%')</if>
+			</if>
+			AND a.studentid IS NOT NULL
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 教师借阅历史查询 -->
+	<select id="findTeachersList" resultType="BookStudentHistory" >
+		SELECT 
+			<include refid="bookStudentHistoryColumns"/>
+		FROM book_student_history a
+		<include refid="bookStudentHistoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="isbn != null and isbn != ''">
+				AND a.isbn = #{isbn}
+			</if>
+			<if test="ssh != null and ssh != ''">
+				AND a.ssh LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{ssh},'%')</if>
+			</if>
+			<if test="booktype != null and booktype != ''">
+				AND a.booktype = #{booktype}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="author != null and author != ''">
+				AND a.author LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{author},'%')</if>
+			</if>
+			<if test="cbs != null and cbs != ''">
+				AND a.cbs LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{cbs},'%')</if>
+			</if>
+			<if test="jcsj != null and jcsj != ''">
+				AND DATE_FORMAT(a.jcsj,'%Y-%m-%d %H:%i') &gt;= #{jcsj}
+			</if>
+			<if test="yhrq != null and yhrq != ''">
+				AND DATE_FORMAT(a.yhrq,'%Y-%m-%d %H:%i') &gt;= #{yhrq}
+			</if>
+			<if test="ghsj != null and ghsj != ''">
+				AND DATE_FORMAT(a.ghsj,'%Y-%m-%d %H:%i') &gt;= #{ghsj}
+			</if>
+			<if test="teachersName != null and teachersName != ''">
+				AND a.teachersname LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{teachersName},'%')</if>
+			</if>
+			<if test="teachersBh != null and teachersBh != ''">
+				AND a.teachersBh LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{teachersBh},'%')</if>
+			</if>
+			AND a.teachersid IS NOT NULL
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 学生遗失统计 -->
+	<select id="studentLossStatistic" resultType="BookStudentHistory">
+		SELECT 
+			a.id AS "id",
+			a.mainid AS "mainid.id",
+			a.bookid AS "bookid.id",
+			a.isbn AS "isbn",
+			a.ssh AS "ssh",
+			a.booktype AS "booktype",
+			a.name AS "name",
+			a.author AS "author",
+			a.cbs AS "cbs",
+			a.price AS "price",
+			a.jcsj AS "jcsj",
+			a.yhrq AS "yhrq",
+			a.ghsj AS "ghsj",
+			a.cqts AS "cqts",
+			a.studentid AS "studentId",
+			a.studentname AS "studentName",
+			a.studentxh AS "studentXh",
+			a.classesid AS "classesId",
+			a.classesname AS "classesName",
+			a.pcsj AS "pcsj",
+			a.pcje AS "pcje",
+			(SELECT name FROM SYS_USER WHERE id = a.create_by) AS "admins",
+			a.remarks AS "rem"
+		FROM book_student_history a 
+		<where>
+			<if test="isbn != null and isbn != ''">
+				AND a.isbn LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{isbn},'%')</if>
+			</if>
+			<if test="ssh != null and ssh != ''">
+				AND a.ssh LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{ssh},'%')</if>
+			</if>
+			<if test="booktype != null and booktype != ''">
+				AND a.booktype = #{booktype}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="author != null and author != ''">
+				AND a.author LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{author},'%')</if>
+			</if>
+			<if test="cbs != null and cbs != ''">
+				AND a.cbs LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{cbs},'%')</if>
+			</if>
+			<if test="jcsj != null and jcsj != ''">
+				AND DATE_FORMAT(a.jcsj,'%Y-%m-%d %H:%i') &gt;= #{jcsj}
+			</if>
+			<if test="yhrq != null and yhrq != ''">
+				AND DATE_FORMAT(a.yhrq,'%Y-%m-%d %H:%i') &gt;= #{yhrq}
+			</if>
+			<if test="ghsj != null and ghsj != ''">
+				AND DATE_FORMAT(a.ghsj,'%Y-%m-%d %H:%i') &gt;= #{ghsj}
+			</if>
+			<if test="studentName != null and studentName != ''">
+				AND a.studentName LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{studentName},'%')</if>
+			</if>
+			<if test="studentXh != null and studentXh != ''">
+				AND a.studentXh LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{studentXh},'%')</if>
+			</if>
+			<if test="classesName != null and classesName != ''">
+				AND a.classesName LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{classesName},'%')</if>
+			</if>
+			AND a.studentname IS NOT NULL
+			AND a.pcje IS NOT NULL
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 学生遗失统计导出 -->
+	<select id="studentLossStatisticExport" resultType="BookStudentHistoryPojo">
+		SELECT 
+			a.id AS "id",
+			a.mainid AS "mainid.id",
+			a.bookid AS "bookid.id",
+			a.isbn AS "isbn",
+			a.ssh AS "ssh",
+			a.booktype AS "booktype",
+			a.name AS "name",
+			a.author AS "author",
+			a.cbs AS "cbs",
+			a.price AS "price",
+			a.jcsj AS "jcsj",
+			a.yhrq AS "yhrq",
+			a.ghsj AS "ghsj",
+			a.cqts AS "cqts",
+			a.studentid AS "studentId",
+			a.studentname AS "studentName",
+			a.studentxh AS "studentXh",
+			a.classesid AS "classesId",
+			a.classesname AS "classesName",
+			a.pcsj AS "pcsj",
+			a.pcje AS "pcje",
+			(SELECT name FROM SYS_USER WHERE id = a.create_by) AS "admins",
+			a.remarks AS "rem"
+		FROM book_student_history a 
+		<where>
+			AND a.studentname IS NOT NULL
+			AND a.pcje IS NOT NULL
+		</where>
+	</select>
+	
+	<!-- 教师遗失统计 -->
+	<select id="teachersLossStatisticList" resultType="BookStudentHistory">
+		SELECT 
+			a.id AS "id",
+			a.mainid AS "mainid.id",
+			a.bookid AS "bookid.id",
+			a.isbn AS "isbn",
+			a.ssh AS "ssh",
+			a.booktype AS "booktype",
+			a.name AS "name",
+			a.author AS "author",
+			a.cbs AS "cbs",
+			a.price AS "price",
+			a.jcsj AS "jcsj",
+			a.yhrq AS "yhrq",
+			a.ghsj AS "ghsj",
+			a.cqts AS "cqts",
+			a.teachersid AS "teachersId",
+			a.teachersname AS "teachersName",
+			a.teachersbh AS "teachersBh",
+			a.pcsj AS "pcsj",
+			a.pcje AS "pcje",
+			(SELECT name FROM SYS_USER WHERE id = a.create_by) AS "admins",
+			a.remarks AS "rem"
+		FROM book_student_history a 
+		<where>
+			<if test="isbn != null and isbn != ''">
+				AND a.isbn LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{isbn},'%')</if>
+			</if>
+			<if test="ssh != null and ssh != ''">
+				AND a.ssh LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{ssh},'%')</if>
+			</if>
+			<if test="booktype != null and booktype != ''">
+				AND a.booktype = #{booktype}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="author != null and author != ''">
+				AND a.author LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{author},'%')</if>
+			</if>
+			<if test="cbs != null and cbs != ''">
+				AND a.cbs LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{cbs},'%')</if>
+			</if>
+			<if test="jcsj != null and jcsj != ''">
+				AND DATE_FORMAT(a.jcsj,'%Y-%m-%d %H:%i') &gt;= #{jcsj}
+			</if>
+			<if test="yhrq != null and yhrq != ''">
+				AND DATE_FORMAT(a.yhrq,'%Y-%m-%d %H:%i') &gt;= #{yhrq}
+			</if>
+			<if test="ghsj != null and ghsj != ''">
+				AND DATE_FORMAT(a.ghsj,'%Y-%m-%d %H:%i') &gt;= #{ghsj}
+			</if>
+			<if test="studentName != null and studentName != ''">
+				AND a.studentName LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{studentName},'%')</if>
+			</if>
+			<if test="studentXh != null and studentXh != ''">
+				AND a.studentXh LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{studentXh},'%')</if>
+			</if>
+			<if test="classesName != null and classesName != ''">
+				AND a.classesName LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{classesName},'%')</if>
+			</if>
+			AND a.teachersname IS NOT NULL
+			AND a.pcje IS NOT NULL
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 教师遗失统计导出 -->
+	<select id="teachersLossStatisticExport" resultType="BookTeachersHistoryPojo">
+		SELECT 
+			a.id AS "id",
+			a.mainid AS "mainid.id",
+			a.bookid AS "bookid.id",
+			a.isbn AS "isbn",
+			a.ssh AS "ssh",
+			a.booktype AS "booktype",
+			a.name AS "name",
+			a.author AS "author",
+			a.cbs AS "cbs",
+			a.price AS "price",
+			a.jcsj AS "jcsj",
+			a.yhrq AS "yhrq",
+			a.ghsj AS "ghsj",
+			a.cqts AS "cqts",
+			a.teachersid AS "teachersId",
+			a.teachersname AS "teachersName",
+			a.teachersbh AS "teachersBh",
+			a.pcsj AS "pcsj",
+			a.pcje AS "pcje",
+			(SELECT name FROM SYS_USER WHERE id = a.create_by) AS "admins",
+			a.remarks AS "rem"
+		FROM book_student_history a 
+		<where>
+			AND a.teachersname IS NOT NULL
+			AND a.pcje IS NOT NULL
+		</where>
+	</select>
+	
+	<!-- 添加遗失信息 -->
+	<update id="isLoss">
+		UPDATE book_student_history SET 	
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 还书添加还书时间 -->
+	<update id="updataHistory">
+		UPDATE book_student_history SET 	
+			ghsj = #{ghsj},
+			cqts = #{cqts}
+		WHERE isbn = #{isbn}
+		AND id = #{id}
+	</update>
+	
+	<select id="findAllList" resultType="BookStudentHistory" >
+		SELECT 
+			<include refid="bookStudentHistoryColumns"/>
+		FROM book_student_history a
+		<include refid="bookStudentHistoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO book_student_history(
+			id,
+			mainid,
+			bookid,
+			isbn,
+			ssh,
+			booktype,
+			name,
+			author,
+			cbs,
+			price,
+			jcsj,
+			yhrq,
+			ghsj,
+			cqts,
+			studentid,
+			studentname,
+			studentxh,
+			classesid,
+			classesname,
+			teachersid,
+			teachersname,
+			teachersBh,
+			pcsj,
+			pcje,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{mainid.id},
+			#{bookid.id},
+			#{isbn},
+			#{ssh},
+			#{booktype},
+			#{name},
+			#{author},
+			#{cbs},
+			#{price},
+			#{jcsj},
+			#{yhrq},
+			#{ghsj},
+			#{cqts},
+			#{studentId},
+			#{studentName},
+			#{studentXh},
+			#{classesId},
+			#{classesName},
+			#{teachersId},
+			#{teachersName},
+			#{teachersBh},
+			#{pcsj},
+			#{pcje},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE book_student_history SET 	
+			mainid = #{mainid.id},
+			bookid = #{bookid.id},
+			isbn = #{isbn},
+			ssh = #{ssh},
+			booktype = #{booktype},
+			name = #{name},
+			author = #{author},
+			cbs = #{cbs},
+			price = #{price},
+			jcsj = #{jcsj},
+			yhrq = #{yhrq},
+			ghsj = #{ghsj},
+			cqts = #{cqts},
+			studentid = #{studentId},
+			studentname = #{studentName},
+			studentxh = #{studentXh},
+			classesid = #{classesId},
+			classesname = #{classesName},
+			teachersid = #{teachersId},
+			teachersname = #{teachersName},
+			teachersBh = #{teachersBh},
+			pcsj = #{pcsj},
+			pcje = #{pcje},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM book_student_history
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE book_student_history SET 
+			del_flag = #{DEL_FLAG_DELETE}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="BookStudentHistory" statementType="STATEMENT">
+		select * FROM book_student_history  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>
